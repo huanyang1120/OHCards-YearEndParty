@@ -14,7 +14,50 @@ const DATA_FILE = path.join(__dirname, 'wishes.json');
 
 // 中间件配置
 app.use(express.json());
-app.use(express.static(__dirname));
+
+// 性能监控中间件
+app.use((req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        
+        // 记录慢请求（超过1秒）
+        if (duration > 1000) {
+            console.warn(`慢请求: ${req.method} ${req.url} - ${duration}ms`);
+        }
+        
+        // 记录内存使用（仅在开发环境或需要时）
+        if (process.env.NODE_ENV !== 'production' && duration > 500) {
+            const memUsage = process.memoryUsage();
+            console.log(`内存使用: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+        }
+    });
+    
+    next();
+});
+
+// 静态资源优化 - 添加缓存头
+app.use(express.static(__dirname, {
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+    etag: true,
+    lastModified: true
+}));
+
+// 延迟加载Canvas依赖
+let canvas = null;
+const loadCanvas = async () => {
+    if (!canvas) {
+        try {
+            canvas = require('canvas');
+            console.log('Canvas库已加载');
+        } catch (error) {
+            console.error('Canvas库加载失败:', error);
+            throw error;
+        }
+    }
+    return canvas;
+};
 
 // 存储所有约定的数组
 let wishes = [];
@@ -81,8 +124,32 @@ function broadcastNewWish(wish) {
 
 // API路由
 
+// 优化的健康检查端点
+app.get('/api/health', (req, res) => {
+    const uptime = process.uptime();
+    const memUsage = process.memoryUsage();
+    
+    res.json({
+        status: 'healthy',
+        uptime: Math.floor(uptime),
+        memory: {
+            used: Math.round(memUsage.heapUsed / 1024 / 1024),
+            total: Math.round(memUsage.heapTotal / 1024 / 1024)
+        },
+        connections: clients.size,
+        wishes: wishes.length,
+        timestamp: new Date().toISOString()
+    });
+});
+
 // 获取所有约定
 app.get('/api/wishes', (req, res) => {
+    // 添加缓存头优化
+    res.set({
+        'Cache-Control': 'public, max-age=30',
+        'ETag': `"wishes-${wishes.length}-${Date.now()}"`,
+    });
+    
     res.json(wishes);
 });
 
@@ -316,15 +383,16 @@ app.delete('/api/admin/clear-wishes', async (req, res) => {
     }
 });
 
-// 批量下载愿望卡片（管理员功能）
+// 批量下载愿望卡片（管理员功能）- 优化版本
 app.post('/api/admin/download-cards', async (req, res) => {
     try {
         if (wishes.length === 0) {
             return res.status(400).json({ error: 'No wish card' });
         }
         
+        // 延迟加载依赖以优化启动时间
         const archiver = require('archiver');
-        const { createCanvas } = require('canvas');
+        const { createCanvas } = await loadCanvas();
         
         // 设置响应头
         res.setHeader('Content-Type', 'application/zip');

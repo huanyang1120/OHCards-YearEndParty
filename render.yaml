@@ -4,9 +4,14 @@ services:
     runtime: node
     buildCommand: npm ci
     startCommand: npm start
-    healthCheckPath: /api/wishes
+    healthCheckPath: /api/health
     plan: free
     region: singapore
     envVars:
       - key: NODE_ENV
         value: production
+      - key: RENDER_EXTERNAL_URL
+        fromService:
+          type: web
+          name: OHCards-YearEndParty
+          property: url
