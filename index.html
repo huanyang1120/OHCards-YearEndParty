@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>女力成长俱乐部年会 - 许愿墙</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .download-card-btn, .view-all-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: transform 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .view-all-btn {
+            background: linear-gradient(45deg, #45b7d1, #667eea);
+        }
+
+        .download-card-btn:hover, .view-all-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .action-buttons {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .card-canvas {
+            position: fixed;
+            top: -1000px;
+            left: -1000px;
+            z-index: -1;
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">L</div>
+        <h1 style="color: #4A90E2; font-size: 24px; margin-bottom: 15px; font-weight: bold;">
+            女力成长俱乐部<br>
+            年会许愿墙
+        </h1>
+        <p class="subtitle">向上生长 · 成就梦想</p>
+        
+        <form id="wishForm">
+            <div class="form-group">
+                <label for="name">您的姓名</label>
+                <input type="text" id="name" name="name" required placeholder="请输入您的姓名">
+            </div>
+            
+            <div class="form-group">
+                <label for="wish">您的新年愿望</label>
+                <textarea id="wish" name="wish" required placeholder="分享您对未来的美好愿望和祝福..."></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">
+                许下愿望
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Submitting your wish...</p>
+        </div>
+        
+        <div class="success-message" id="successMessage">
+            <strong>愿望提交成功！</strong><br>
+            您的愿望已显示在大屏幕上，感谢您的参与！
+            <div class="action-buttons">
+                <button class="download-card-btn" id="downloadCardBtn" onclick="downloadWishCard()">
+                    下载愿望卡片
+                </button>
+                <a href="/display" class="view-all-btn" target="_blank">
+                    查看所有愿望
+                </a>
+                <a href="/display2" class="view-all-btn" target="_blank">
+                    查看所有愿望 - 炫彩模式
+                </a>
+            </div>
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+            提交失败，请重试
+        </div>
+    </div>
+
+    <canvas id="cardCanvas" class="card-canvas" width="600" height="400"></canvas>
+    
+    <!-- 引入独立的愿望卡片生成模块 -->
+    <script src="wishCard.js"></script>
+
+    <script>
+        let currentWishData = null;
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 请求防重复提交
+        let isSubmitting = false;
+
+        document.getElementById('wishForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 防止重复提交
+            if (isSubmitting) {
+                return;
+            }
+            
+            const name = document.getElementById('name').value.trim();
+            const wish = document.getElementById('wish').value.trim();
+            
+            if (!name || !wish) {
+                showError('Please fill in all information');
+                return;
+            }
+            
+            isSubmitting = true;
+            showLoading(true);
+            
+            try {
+                // 设置超时时间为10秒
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch('/api/submit-wish', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, wish }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    // 保存当前愿望数据用于生成卡片
+                    currentWishData = {
+                        name: name,
+                        wish: wish,
+                        time: new Date().toLocaleString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                        })
+                    };
+                    showSuccess();
+                    document.getElementById('wishForm').reset();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Submission failed');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    showError('Request timeout, please try again');
+                } else {
+                    showError('Submission failed, please try again');
+                }
+                console.error('Submission error:', error);
+            } finally {
+                isSubmitting = false;
+                showLoading(false);
+            }
+        });
+        
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (show) {
+                loading.style.display = 'block';
+                submitBtn.disabled = true;
+            } else {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+        
+        function showSuccess() {
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'block';
+            
+            // 移除自动隐藏，让用户可以持续看到按钮
+            // setTimeout(() => {
+            //     successMessage.style.display = 'none';
+            // }, 3000);
+        }
+        
+        function showError(message) {
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            successMessage.style.display = 'none';
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // 使用模块化的愿望卡片生成功能
+        function downloadWishCard() {
+            if (!currentWishData) {
+                showError('请先提交您的愿望，然后再下载卡片');
+                return;
+            }
+            
+            if (!window.WishCard) {
+                showError('愿望卡片模块加载失败，请刷新页面重试');
+                return;
+            }
+            
+            // 调用模块化的函数
+            window.WishCard.downloadWishCard(currentWishData);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>响应式测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .viewport-info {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport-info">
+        <h2>响应式测试页面</h2>
+        <p><strong>视口宽度:</strong> <span id="width"></span>px</p>
+        <p><strong>视口高度:</strong> <span id="height"></span>px</p>
+        <p><strong>设备类型:</strong> <span id="device"></span></p>
+        <p><strong>用户代理:</strong> <span id="userAgent"></span></p>
+    </div>
+    
+    <div class="test-buttons">
+        <a href="/display" class="btn">访问 Display 页面</a>
+        <a href="/" class="btn">返回主页</a>
+    </div>
+
+    <script>
+        function updateViewportInfo() {
+            document.getElementById('width').textContent = window.innerWidth;
+            document.getElementById('height').textContent = window.innerHeight;
+            
+            const width = window.innerWidth;
+            let deviceType = '';
+            if (width <= 480) {
+                deviceType = '手机 (≤480px)';
+            } else if (width <= 768) {
+                deviceType = '平板 (481-768px)';
+            } else {
+                deviceType = 'PC (>768px)';
+            }
+            document.getElementById('device').textContent = deviceType;
+            document.getElementById('userAgent').textContent = navigator.userAgent.substring(0, 100) + '...';
+        }
+
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+    </script>
+</body>
+</html>

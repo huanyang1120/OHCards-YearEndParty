@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OH卡 Year End Party Wish - Display</title>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #000000;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 苹果风格动态渐变背景 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(74, 144, 226, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 10%, rgba(138, 43, 226, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 20%, rgba(255, 107, 107, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        /* 动态光影效果 */
+        body::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            right: -50%;
+            bottom: -50%;
+            background: 
+                radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            animation: gridFloat 40s linear infinite;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+            25% {
+                opacity: 0.9;
+                transform: scale(1.05) rotate(1deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1) rotate(0deg);
+            }
+            75% {
+                opacity: 0.9;
+                transform: scale(1.05) rotate(-1deg);
+            }
+        }
+
+        @keyframes gridFloat {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        /* Canvas流星背景层 */
+        #shootingStarsCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                0 1px 0 rgba(255, 255, 255, 0.1) inset;
+            overflow: hidden;
+        }
+
+        /* Header 背景动态光效 */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle at center,
+                rgba(78, 205, 196, 0.15) 0%,
+                rgba(69, 183, 209, 0.1) 25%,
+                transparent 50%
+            );
+            animation: headerGlowRotate 10s linear infinite;
+            z-index: -1;
+        }
+
+        /* Header 扫光效果 */
+        .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 100%
+            );
+            animation: headerSweep 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes headerGlowRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes headerSweep {
+            0% {
+                left: -100%;
+            }
+            50% {
+                left: 100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        .title {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, 
+                #ffffff 0%, 
+                #a0d8ef 25%,
+                #4ecdc4 50%, 
+                #45b7d1 75%,
+                #ffffff 100%
+            );
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1.5px;
+            position: relative;
+            animation: 
+                titleFloat 6s ease-in-out infinite,
+                gradientShift 4s ease-in-out infinite,
+                titleGlow 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.4))
+                    drop-shadow(0 0 40px rgba(69, 183, 209, 0.3))
+                    drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
+        }
+
+        /* 标题后面的光晕层 */
+        .title::before {
+            content: 'OH卡 Year End Party';
+            content: 'OH卡 Year End Party';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, 
+                rgba(78, 205, 196, 0.6) 0%, 
+                rgba(69, 183, 209, 0.6) 50%,
+                rgba(255, 255, 255, 0.6) 100%
+            );
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: blur(20px);
+            opacity: 0.8;
+            z-index: -1;
+            animation: gradientShift 4s ease-in-out infinite reverse;
+        }
+
+        /* 标题闪烁高光效果 */
+        .title::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -10%;
+            width: 30%;
+            height: 200%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.8) 50%, 
+                transparent 100%
+            );
+            transform: skewX(-20deg);
+            animation: titleShine 3s ease-in-out infinite;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-8px) scale(1.02);
+            }
+        }
+
+        @keyframes gradientShift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @keyframes titleGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.4))
+                        drop-shadow(0 0 40px rgba(69, 183, 209, 0.3))
+                        drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(78, 205, 196, 0.8))
+                        drop-shadow(0 0 60px rgba(69, 183, 209, 0.6))
+                        drop-shadow(0 0 80px rgba(255, 255, 255, 0.4))
+                        drop-shadow(0 4px 30px rgba(0, 0, 0, 0.6));
+            }
+        }
+
+        @keyframes titleShine {
+            0% {
+                left: -30%;
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                left: 120%;
+                opacity: 0;
+            }
+        }
+
+        .subtitle {
+            font-size: 24px;
+            opacity: 0.8;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            position: relative;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.6) 0%,
+                rgba(255, 255, 255, 0.9) 25%,
+                rgba(78, 205, 196, 0.8) 50%,
+                rgba(255, 255, 255, 0.9) 75%,
+                rgba(255, 255, 255, 0.6) 100%
+            );
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: 
+                subtitleFade 4s ease-in-out infinite,
+                subtitleGradient 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+
+        /* 副标题光晕 */
+        .subtitle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 150%;
+            background: radial-gradient(ellipse, 
+                rgba(78, 205, 196, 0.3) 0%, 
+                transparent 70%
+            );
+            z-index: -1;
+            animation: subtitleGlowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes subtitleFade {
+            0%, 100% { 
+                opacity: 0.7;
+                transform: translateY(0);
+            }
+            50% { 
+                opacity: 1;
+                transform: translateY(-2px);
+            }
+        }
+
+        @keyframes subtitleGradient {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @keyframes subtitleGlowPulse {
+            0%, 100% {
+                opacity: 0.4;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 140px);
+            position: relative;
+            z-index: 10;
+            padding: 0 20px;
+        }
+
+        .wishes-panel {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            /* background: rgba(255, 255, 255, 0.05); */
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            margin: 20px 10px;
+            border-radius: 24px;
+            border: 0.5px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            position: relative;
+            animation: panelPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes panelPulse {
+            0%, 100% {
+                border-color: rgba(255, 255, 255, 0.15);
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.4),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            }
+            50% {
+                border-color: rgba(78, 205, 196, 0.35);
+                box-shadow: 
+                    0 12px 40px rgba(0, 0, 0, 0.5),
+                    0 0 25px rgba(78, 205, 196, 0.25),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .wordcloud-panel {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 10px;
+            position: relative;
+            overflow: hidden;
+            /* background: rgba(255, 255, 255, 0.12); */
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 24px;
+            border: 0.5px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* 祝福文字滚动容器 */
+        .wishes-carousel {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin-top: 30px;
+            overflow: hidden;
+            perspective: 1500px;
+        }
+
+        /* 单条祝福文字 */
+        .wish-text-item {
+            position: absolute;
+            width: 100%;
+            padding: 40px 50px;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(80px) scale(0.9);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .wish-text-item.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .wish-text-item.exiting {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-80px) scale(0.9);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 祝福文字样式 */
+        .wish-text-content {
+            font-size: 38px;
+            font-weight: 500;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 1);
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(78, 205, 196, 0.3);
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            animation: textGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% {
+                text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(78, 205, 196, 0.3);
+            }
+            50% {
+                text-shadow: 0 4px 40px rgba(0, 0, 0, 0.6), 0 0 60px rgba(78, 205, 196, 0.6), 0 0 80px rgba(78, 205, 196, 0.4);
+            }
+        }
+
+        .wish-text-author {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: authorFadeIn 0.8s ease-out 0.3s forwards;
+        }
+
+        @keyframes authorFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .active .wish-text-author {
+            animation: authorFadeIn 0.8s ease-out 0.3s forwards, authorPulse 2s ease-in-out 1.1s infinite;
+        }
+
+        @keyframes authorPulse {
+            0%, 100% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.3);
+            }
+        }
+
+        /* 进度指示器 */
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 20;
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .indicator-dot.active {
+            width: 32px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+        }
+
+        .indicator-dot:not(.active):hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.2);
+        }
+
+        /* 引号装饰 */
+        .wish-text-item::before,
+        .wish-text-item::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.3), rgba(69, 183, 209, 0.3));
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .wish-text-item::before {
+            top: 20px;
+            left: 20px;
+        }
+
+        .wish-text-item::after {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .wish-text-item.active::before,
+        .wish-text-item.active::after {
+            opacity: 1;
+            width: 80px;
+            height: 80px;
+        }
+
+        /* 导航按钮 */
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 30;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .carousel-nav:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .carousel-nav-prev {
+            left: 10px;
+        }
+
+        .carousel-nav-next {
+            right: 10px;
+        }
+
+        .carousel-nav::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid rgba(255, 255, 255, 0.8);
+            border-right: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .carousel-nav-prev::after {
+            transform: rotate(-135deg);
+            margin-left: 3px;
+        }
+
+        .carousel-nav-next::after {
+            transform: rotate(45deg);
+            margin-right: 3px;
+        }
+
+        /* 祝福文字背景光效 */
+        .wishes-carousel::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(78, 205, 196, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: carouselGlow 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes carouselGlow {
+            0%, 100% {
+                opacity: 0.6;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        /* 添加暂停/播放按钮 */
+        .carousel-control {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 30;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .carousel-control:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .carousel-control.paused::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 8px solid rgba(255, 255, 255, 0.8);
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            margin-left: 2px;
+        }
+
+        .carousel-control.playing::before,
+        .carousel-control.playing::after {
+            content: '';
+            width: 3px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .carousel-control.playing::before {
+            margin-right: 2px;
+        }
+
+        .carousel-control.playing::after {
+            margin-left: 2px;
+        }
+
+        /* 祝福序号角标 */
+        .wish-text-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.3), rgba(69, 183, 209, 0.3));
+            backdrop-filter: blur(10px);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.5s ease;
+        }
+
+        .wish-text-item.active .wish-text-badge {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s;
+        }
+
+        .section-title {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: -0.8px;
+            text-shadow: none;
+            animation: sectionTitlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes sectionTitlePulse {
+            0%, 100% {
+                opacity: 0.95;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .wish-item {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 0.5px solid rgba(255, 255, 255, 0.15);
+            animation: fadeInUp 0.8s ease-out;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 悬停时的3D效果 */
+        .wish-item:hover {
+            transform: translateY(-3px) scale(1.005);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(78, 205, 196, 0.3);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 1px 1px rgba(78, 205, 196, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* 新愿望的光效动画 */
+        .wish-item.new {
+            animation: slideInRight 1s cubic-bezier(0.4, 0, 0.2, 1), appleGlow 2s ease-out;
+        }
+
+        .wish-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .wish-item:hover::before {
+            left: 100%;
+        }
+
+        .wish-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .wish-content {
+            font-size: 17px;
+            line-height: 1.6;
+            opacity: 0.9;
+            font-weight: 400;
+            letter-spacing: -0.1px;
+        }
+
+        .wish-time {
+            font-size: 13px;
+            opacity: 0.5;
+            margin-top: 12px;
+            text-align: right;
+            font-weight: 400;
+        }
+
+        .wish-number {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            color: white;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+            animation: numberPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes numberPulse {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+            }
+        }
+
+        .stats {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            padding: 20px 28px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .stats:hover {
+            transform: scale(1.05);
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+        }
+
+        .stats-number {
+            font-size: 40px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            animation: statsCount 1s ease-out;
+        }
+
+        @keyframes statsCount {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .stats-label {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 4px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .latest-wish-info {
+            position: absolute;
+            top: 140px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            padding: 18px 24px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .latest-wish-info:hover {
+            transform: scale(1.05);
+        }
+
+        .latest-wish-label {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 6px;
+            font-weight: 400;
+        }
+
+        .latest-wish-number {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: latestWishPulse 1s ease-out;
+        }
+
+        @keyframes latestWishPulse {
+            0% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        
+
+
+
+        /* 灯室（顶部宽矩形房子）*/
+        .lighthouse-lantern {
+            position: absolute;
+            bottom: 195px;  /* 调整5px使其与圆柱体重叠连接 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 75px;  /* 增加5px高度用于与塔身重叠 */
+            background: linear-gradient(180deg,
+                rgba(255, 215, 0, 0.95) 0%,
+                rgba(255, 200, 0, 0.9) 50%,
+                rgba(255, 180, 0, 0.85) 100%
+            );
+            border-radius: 6px;
+            box-shadow: 
+                0 0 40px rgba(255, 215, 0, 0.9),
+                0 0 80px rgba(255, 215, 0, 0.5),
+                inset 0 -10px 30px rgba(255, 150, 0, 0.4);
+            animation: lanternGlow 2s ease-in-out infinite;
+            position: relative;
+            z-index: 2;  /* 确保灯室在塔身上方 */
+        }
+
+        /* 灯室屋顶 */
+        .lighthouse-lantern::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 55px solid transparent;
+            border-right: 55px solid transparent;
+            border-bottom: 25px solid rgba(255, 200, 0, 0.95);
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+        }
+
+        /* 灯室窗户 */
+        .lighthouse-lantern::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(90deg,
+                rgba(255, 255, 200, 0.3) 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 200, 0.3) 100%
+            );
+            border-radius: 4px;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* 灯室底部平台（连接圆柱体和灯室）*/
+        .lighthouse-stripe {
+            position: absolute;
+            bottom: 190px;  /* 在圆柱体顶部和灯室底部之间 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 15px;
+            background: linear-gradient(180deg,
+                rgba(40, 80, 140, 0.8) 0%,
+                rgba(30, 60, 120, 0.7) 100%
+            );
+            border-radius: 4px;
+            box-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(40, 80, 140, 0.4);
+            z-index: 1;
+        }
+
+        /* 灯室闪烁动画 */
+        @keyframes lanternGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 30px rgba(255, 215, 0, 0.8),
+                    0 0 60px rgba(255, 215, 0, 0.4);
+                filter: brightness(1);
+            }
+            50% {
+                box-shadow: 
+                    0 0 50px rgba(255, 215, 0, 1),
+                    0 0 100px rgba(255, 215, 0, 0.6);
+                filter: brightness(1.3);
+            }
+        }
+
+        /* 扇形光束容器 - 从灯室中心发出 */
+        .lighthouse-light {
+            position: absolute;
+            bottom: 232px;  /* 灯室中心位置：195 + 75/2 = 232.5px */
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translateX(-50%);
+            transform-origin: 50% 0%;  /* 旋转原点在底部中心（中心位置）*/
+            animation: rotateOHCardLight 6s linear infinite;
+            pointer-events: none;
+            z-index: 1;  /* 在OH卡下方 */
+        }
+
+        /* 扇形光束 */
+        .light-beam-sector {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translateX(-50%);
+            clip-path: polygon(50% 0%, 48% 100%, 52% 100%);
+            background: linear-gradient(to bottom,
+                rgba(255, 215, 0, 0.8) 0%,
+                rgba(255, 215, 0, 0.5) 30%,
+                rgba(255, 215, 0, 0.2) 60%,
+                rgba(255, 215, 0, 0.05) 100%
+            );
+            filter: blur(12px);
+        }
+
+        /* 第二层扇形光束（更宽更柔和）*/
+        .light-beam-sector-wide {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translateX(-50%);
+            clip-path: polygon(50% 0%, 45% 100%, 55% 100%);
+            background: linear-gradient(to bottom,
+                rgba(255, 215, 0, 0.6) 0%,
+                rgba(255, 215, 0, 0.35) 25%,
+                rgba(255, 215, 0, 0.15) 50%,
+                rgba(255, 215, 0, 0.03) 75%,
+                transparent 100%
+            );
+            filter: blur(25px);
+        }
+
+        /* 光束旋转动画 */
+        @keyframes rotateOHCardLight {
+            0% {
+                transform: translateX(-50%) rotate(0deg);
+            }
+            100% {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+
+        /* 整体浮动效果 */
+        .lighthouse-body {
+            animation: lighthouseFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes lighthouseFloat {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* 底部水面反射光 */
+        .lighthouse-glow {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 60px;
+            background: radial-gradient(ellipse,
+                rgba(40, 80, 140, 0.3) 0%,
+                rgba(40, 80, 140, 0.15) 50%,
+                transparent 100%
+            );
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                opacity: 0.5;
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateX(-50%) scale(1.2);
+            }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .lighthouse-container {
+                transform: translate(-50%, -50%) scale(0.7);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .lighthouse-container {
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+        }
+
+        /* 隐藏旧的ASCII样式 */
+        .lighthouse-ascii {
+            display: none;
+        }
+
+        .starfield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 3s ease-in;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .floating-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 8s infinite ease-in-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes appleGlow {
+            0% {
+                box-shadow: 0 0 0 rgba(78, 205, 196, 0);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(78, 205, 196, 0.6), 0 0 80px rgba(78, 205, 196, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 0 rgba(78, 205, 196, 0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(10px) rotate(240deg); }
+        }
+
+        /* 苹果风格滚动条 */
+        .wishes-panel::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .wishes-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .wishes-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(78, 205, 196, 0.6), rgba(69, 183, 209, 0.6));
+            border-radius: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .wishes-panel::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(78, 205, 196, 0.8), rgba(69, 183, 209, 0.8));
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 18px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .stats {
+                top: 10px;
+                right: 10px;
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .stats-number {
+                font-size: 24px;
+            }
+
+            .latest-wish-info {
+                top: 80px;
+                right: 10px;
+                padding: 10px;
+                max-width: 150px;
+            }
+
+            .latest-wish-number {
+                font-size: 18px;
+            }
+
+            /* 手机端改为垂直布局 */
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                min-height: calc(100vh - 120px);
+            }
+
+            .wishes-panel {
+                flex: none;
+                height: 50vh;
+                margin: 10px;
+                order: 2;
+            }
+
+            .wordcloud-panel {
+                flex: none;
+                height: 40vh;
+                margin: 10px;
+                order: 1;
+            }
+
+            .section-title {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+
+            #wordcloud {
+                width: 100%;
+                max-width: 350px;
+                height: 250px;
+            }
+
+            .wishes-carousel {
+                height: 250px;
+                max-width: 100%;
+                padding: 0 10px;
+            }
+
+            .wish-text-content {
+                font-size: 24px;
+            }
+
+            .wish-text-author {
+                font-size: 18px;
+            }
+
+            .carousel-nav {
+                width: 35px;
+                height: 35px;
+            }
+
+            .wish-item {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+
+            .wish-name {
+                font-size: 16px;
+            }
+
+            .wish-content {
+                font-size: 14px;
+            }
+
+            .wish-number {
+                width: 25px;
+                height: 25px;
+                font-size: 10px;
+            }
+
+            /* 优化滚动 */
+            body {
+                overflow-y: auto;
+            }
+
+            .wishes-panel {
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 10px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .stats {
+                padding: 8px;
+            }
+
+            .stats-number {
+                font-size: 20px;
+            }
+
+            .latest-wish-info {
+                padding: 8px;
+                max-width: 120px;
+            }
+
+            .main-content {
+                margin: 0;
+            }
+
+            .wishes-panel,
+            .wordcloud-panel {
+                margin: 5px;
+                border-radius: 10px;
+            }
+
+            .wishes-panel {
+                height: 45vh;
+            }
+
+            .wordcloud-panel {
+                height: 40vh;
+            }
+
+            .wishes-carousel {
+                height: 220px;
+                max-width: 100%;
+                padding: 0 5px;
+            }
+
+            .wish-text-content {
+                font-size: 18px;
+            }
+
+            .wish-text-author {
+                font-size: 14px;
+            }
+
+            .carousel-nav {
+                width: 30px;
+                height: 30px;
+            }
+
+            .carousel-nav-prev {
+                left: 5px;
+            }
+
+            .carousel-nav-next {
+                right: 5px;
+            }
+
+            .section-title {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .wish-item {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+
+            .wish-content {
+                font-size: 13px;
+                line-height: 1.4;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas for shooting stars -->
+    <canvas id="shootingStarsCanvas"></canvas>
+    
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="header">
+        <div class="title">OH卡 Year End Party</div>
+        <div class="subtitle">Future Wish · Living Upward</div>
+    </div>
+
+    <div class="stats">
+        <div class="stats-number" id="wishCount">0</div>
+        <div class="stats-label">wishes</div>
+    </div>
+
+    <div class="latest-wish-info">
+        <div class="latest-wish-label">Latest Wish #</div>
+        <div class="latest-wish-number" id="latestWishNumber">0</div>
+    </div>
+
+    <!-- OH卡 -->
+    <div class="lighthouse-container">
+        <!-- 扇形光束（旋转） -->
+        <div class="lighthouse-light">
+            <div class="light-beam-sector"></div>
+            <div class="light-beam-sector-wide"></div>
+        </div>
+        
+        <!-- OH卡主体 -->
+        <div class="lighthouse-body">
+            <!-- 灯室（顶部黄色发光部分） -->
+            <div class="lighthouse-lantern"></div>
+            
+            <!-- 塔身条纹 -->
+            <div class="lighthouse-stripe"></div>
+            
+            <!-- OH卡塔身（梯形，上宽下窄） -->
+            <div class="lighthouse-tower"></div>
+            
+            <!-- 底座 -->
+            <div class="lighthouse-base"></div>
+        </div>
+        
+        <!-- 底部光晕反射 -->
+        <div class="lighthouse-glow"></div>
+        
+    
+    </div>
+
+    <div class="main-content">
+        <div class="wishes-panel">
+            <div class="section-title">Latest Wishes</div>
+            <div id="wishesContainer">
+                <!-- 约定列表将在这里显示 -->
+            </div>
+        </div>
+
+        <div class="wordcloud-panel">
+            <div class="section-title">Wish Cloud</div>
+            <div class="starfield" id="starfield"></div>
+            
+            <!-- 祝福文字轮播 -->
+            <div class="wishes-carousel" id="wishesCarousel">
+                <!-- 动态生成的祝福文字 -->
+            </div>
+            <div class="carousel-indicators" id="carouselIndicators"></div>
+            <div class="carousel-nav carousel-nav-prev" id="carouselPrev"></div>
+            <div class="carousel-nav carousel-nav-next" id="carouselNext"></div>
+            <div class="carousel-control playing" id="carouselControl"></div>
+        </div>
+    </div>
+
+    <script>
+        class OHCardDisplay {
+            constructor() {
+                this.wishes = [];
+                this.wordFrequency = {};
+                this.init();
+            }
+
+            init() {
+                this.createParticles();
+                this.initShootingStars();
+                this.loadWishes();
+                this.initWishesCarousel();
+                this.startPolling();
+            }
+
+            createParticles() {
+                const container = document.getElementById('particles');
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 8 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                    container.appendChild(particle);
+                }
+            }
+
+            async loadWishes() {
+                try {
+                    const response = await fetch('/api/wishes');
+                    if (response.ok) {
+                        this.wishes = await response.json();
+                        this.updateDisplay();
+                    }
+                } catch (error) {
+                    console.error('加载约定失败:', error);
+                    // 添加示例数据用于演示
+                    this.addSampleData();
+                }
+            }
+
+            addSampleData() {
+                const sampleWishes = [
+                    { name: "张三", wish: "希望在新的一年里能够健康快乐，工作顺利，家庭和睦", timestamp: new Date() },
+                    { name: "李四", wish: "愿OH卡越来越好，成为更多人向上生活的引路灯", timestamp: new Date(Date.now() - 60000) },
+                    { name: "王五", wish: "期待学习更多新技能，成为更好的自己", timestamp: new Date(Date.now() - 120000) },
+                    { name: "赵六", wish: "希望能够在技术道路上不断进步，为社会贡献更多价值", timestamp: new Date(Date.now() - 180000) }
+                ];
+                
+                this.wishes = sampleWishes;
+                this.updateDisplay();
+            }
+
+            updateDisplay() {
+                const container = document.getElementById('wishesContainer');
+                const countElement = document.getElementById('wishCount');
+                const latestWishNumberElement = document.getElementById('latestWishNumber');
+                
+                countElement.textContent = this.wishes.length;
+                latestWishNumberElement.textContent = this.wishes.length;
+                
+                // 清空容器
+                container.innerHTML = '';
+                
+                // 显示最新的约定（最多显示10个）
+                const recentWishes = this.wishes.slice(-10).reverse();
+                
+                recentWishes.forEach((wish, index) => {
+                    const wishElement = this.createWishElement(wish, index === 0);
+                    container.appendChild(wishElement);
+                });
+                
+                // 更新轮播
+                this.updateCarousel();
+            }
+
+            createWishElement(wish, isNew = false) {
+                const wishDiv = document.createElement('div');
+                wishDiv.className = 'wish-item' + (isNew ? ' new' : '');
+                
+                const timeStr = new Date(wish.timestamp).toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // 计算愿望序号（基于在数组中的位置）
+                const wishIndex = this.wishes.findIndex(w => w.id === wish.id || 
+                    (w.name === wish.name && w.timestamp === wish.timestamp));
+                const wishNumber = wishIndex + 1;
+                
+                wishDiv.innerHTML = `
+                    <div class="wish-number">#${wishNumber}</div>
+                    <div class="wish-name">${this.escapeHtml(wish.name)}</div>
+                    <div class="wish-content">${this.escapeHtml(wish.wish)}</div>
+                    <div class="wish-time">${timeStr}</div>
+                `;
+                
+                return wishDiv;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // 初始化流星动画系统
+            initShootingStars() {
+                const canvas = document.getElementById('shootingStarsCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 设置canvas尺寸
+                const resizeCanvas = () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                };
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                // 流星类
+                class ShootingStar {
+                    constructor() {
+                        this.reset();
+                    }
+                    
+                    reset() {
+                        // 随机起始位置（从屏幕上方和两侧）
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height * 0.3; // 上方30%区域
+                        
+                        // 流星长度和角度
+                        this.length = Math.random() * 100 + 80;
+                        this.angle = Math.random() * 30 + 30; // 30-60度
+                        
+                        // 速度
+                        this.speed = Math.random() * 3 + 2;
+                        
+                        // 颜色（多种颜色）
+                        const colors = [
+                            'rgba(255, 255, 255, ',
+                            'rgba(138, 43, 226, ',
+                            'rgba(78, 205, 196, ',
+                            'rgba(69, 183, 209, ',
+                            'rgba(255, 215, 0, ',
+                            'rgba(255, 105, 180, '
+                        ];
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        // 粗细
+                        this.width = Math.random() * 2 + 1;
+                        
+                        // 生命周期
+                        this.life = 1;
+                        this.decay = Math.random() * 0.01 + 0.005;
+                    }
+                    
+                    update() {
+                        // 根据角度移动
+                        const angleRad = (this.angle * Math.PI) / 180;
+                        this.x += Math.cos(angleRad) * this.speed;
+                        this.y += Math.sin(angleRad) * this.speed;
+                        
+                        // 生命值递减
+                        this.life -= this.decay;
+                        
+                        // 如果流星离开屏幕或消失，重置
+                        if (this.life <= 0 || this.x > canvas.width + 100 || this.y > canvas.height + 100) {
+                            this.reset();
+                        }
+                    }
+                    
+                    draw(ctx) {
+                        if (this.life <= 0) return;
+                        
+                        ctx.save();
+                        
+                        // 计算尾部位置
+                        const angleRad = (this.angle * Math.PI) / 180;
+                        const endX = this.x - Math.cos(angleRad) * this.length;
+                        const endY = this.y - Math.sin(angleRad) * this.length;
+                        
+                        // 创建渐变
+                        const gradient = ctx.createLinearGradient(this.x, this.y, endX, endY);
+                        gradient.addColorStop(0, this.color + (this.life * 0.9) + ')');
+                        gradient.addColorStop(0.5, this.color + (this.life * 0.5) + ')');
+                        gradient.addColorStop(1, this.color + '0)');
+                        
+                        // 绘制流星主体
+                        ctx.strokeStyle = gradient;
+                        ctx.lineWidth = this.width;
+                        ctx.lineCap = 'round';
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(endX, endY);
+                        ctx.stroke();
+                        
+                        // 绘制发光效果
+                        ctx.shadowColor = this.color + '0.8)';
+                        ctx.shadowBlur = 15 * this.life;
+                        ctx.stroke();
+                        
+                        // 绘制流星头部
+                        ctx.fillStyle = this.color + (this.life * 1) + ')';
+                        ctx.shadowBlur = 20 * this.life;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.width * 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 添加尾部光点
+                        const sparkCount = 5;
+                        for (let i = 0; i < sparkCount; i++) {
+                            const ratio = i / sparkCount;
+                            const sparkX = this.x - Math.cos(angleRad) * this.length * ratio;
+                            const sparkY = this.y - Math.sin(angleRad) * this.length * ratio;
+                            const sparkSize = (1 - ratio) * this.width * 0.8 * this.life;
+                            
+                            ctx.fillStyle = this.color + ((1 - ratio) * this.life * 0.6) + ')';
+                            ctx.shadowBlur = 10 * this.life;
+                            ctx.beginPath();
+                            ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        
+                        ctx.restore();
+                    }
+                }
+                
+                // 创建多个流星
+                const stars = [];
+                const starCount = 15; // 增加流星数量
+                for (let i = 0; i < starCount; i++) {
+                    stars.push(new ShootingStar());
+                }
+                
+                // 动画循环
+                const animate = () => {
+                    // 使用半透明黑色清除，创建拖尾效果
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 更新和绘制所有流星
+                    stars.forEach(star => {
+                        star.update();
+                        star.draw(ctx);
+                    });
+                    
+                    requestAnimationFrame(animate);
+                };
+                
+                animate();
+            }
+
+            // 初始化OH卡交互效果
+            initOHCard() {
+                const lighthouse = document.querySelector('.lighthouse-container');
+                const lighthouseAscii = document.querySelector('.lighthouse-ascii');
+                
+                if (!lighthouse || !lighthouseAscii) return;
+                
+                // 鼠标悬停时加速旋转
+                lighthouse.addEventListener('mouseenter', () => {
+                    const lightBeams = document.querySelector('.lighthouse-light');
+                    if (lightBeams) {
+                        lightBeams.style.animationDuration = '2s';
+                    }
+                    lighthouseAscii.style.transform = 'scale(1.05)';
+                    lighthouseAscii.style.filter = 'drop-shadow(0 0 30px rgba(135, 206, 250, 0.4))';
+                });
+                
+                lighthouse.addEventListener('mouseleave', () => {
+                    const lightBeams = document.querySelector('.lighthouse-light');
+                    if (lightBeams) {
+                        lightBeams.style.animationDuration = '4s';
+                    }
+                    lighthouseAscii.style.transform = 'scale(1)';
+                    lighthouseAscii.style.filter = 'drop-shadow(0 0 20px rgba(135, 206, 250, 0.2))';
+                });
+                
+                // 点击OH卡时触发特效
+                lighthouse.addEventListener('click', () => {
+                    // 创建扩散波纹
+                    this.createOHCardRipple();
+                    
+                    // 闪烁效果
+                    lighthouseAscii.style.animation = 'lighthouseFlash 0.5s ease-out';
+                    setTimeout(() => {
+                        lighthouseAscii.style.animation = 'lighthouseFloat 4s ease-in-out infinite';
+                    }, 500);
+                });
+                
+                // 添加闪烁动画样式
+                if (!document.getElementById('lighthouseFlashStyle')) {
+                    const style = document.createElement('style');
+                    style.id = 'lighthouseFlashStyle';
+                    style.textContent = `
+                        @keyframes lighthouseFlash {
+                            0%, 100% { 
+                                filter: drop-shadow(0 0 20px rgba(135, 206, 250, 0.2));
+                                transform: scale(1);
+                            }
+                            50% { 
+                                filter: drop-shadow(0 0 60px rgba(135, 206, 250, 0.5));
+                                transform: scale(1.1);
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            // 创建OH卡波纹特效
+            createOHCardRipple() {
+                const lighthouse = document.querySelector('.lighthouse-container');
+                if (!lighthouse) return;
+                
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 20px;
+                    height: 20px;
+                    border: 2px solid rgba(255, 215, 0, 0.2);
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%);
+                    pointer-events: none;
+                    animation: rippleExpand 1s ease-out forwards;
+                `;
+                
+                lighthouse.appendChild(ripple);
+                
+                // 添加波纹动画
+                if (!document.getElementById('rippleExpandStyle')) {
+                    const style = document.createElement('style');
+                    style.id = 'rippleExpandStyle';
+                    style.textContent = `
+                        @keyframes rippleExpand {
+                            0% {
+                                width: 20px;
+                                height: 20px;
+                                opacity: 1;
+                            }
+                            100% {
+                                width: 150px;
+                                height: 150px;
+                                opacity: 0;
+                                border-width: 1px;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // 移除波纹元素
+                setTimeout(() => {
+                    ripple.remove();
+                }, 1000);
+            }
+
+            // 初始化祝福文字轮播
+            initWishesCarousel() {
+                this.currentCarouselIndex = 0;
+                this.carouselAutoPlayInterval = null;
+                this.isCarouselPlaying = true;
+                
+                // 绑定导航按钮
+                const prevBtn = document.getElementById('carouselPrev');
+                const nextBtn = document.getElementById('carouselNext');
+                const controlBtn = document.getElementById('carouselControl');
+                
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => this.prevWish());
+                }
+                
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => this.nextWish());
+                }
+                
+                if (controlBtn) {
+                    controlBtn.addEventListener('click', () => this.toggleCarouselPlay());
+                }
+                
+                // 启动自动播放
+                this.startCarouselAutoPlay();
+            }
+
+            // 切换播放/暂停
+            toggleCarouselPlay() {
+                const controlBtn = document.getElementById('carouselControl');
+                
+                if (this.isCarouselPlaying) {
+                    this.stopCarouselAutoPlay();
+                    this.isCarouselPlaying = false;
+                    controlBtn?.classList.remove('playing');
+                    controlBtn?.classList.add('paused');
+                } else {
+                    this.startCarouselAutoPlay();
+                    this.isCarouselPlaying = true;
+                    controlBtn?.classList.remove('paused');
+                    controlBtn?.classList.add('playing');
+                }
+            }
+
+            // 更新轮播内容
+            updateCarousel() {
+                const container = document.getElementById('wishesCarousel');
+                const indicators = document.getElementById('carouselIndicators');
+                
+                if (!container || this.wishes.length === 0) return;
+                
+                // 清空容器
+                container.innerHTML = '';
+                indicators.innerHTML = '';
+                
+                // 获取最新的祝福（最多显示10条）
+                const displayWishes = this.wishes.slice(-10);
+                
+                // 创建祝福文字项
+                displayWishes.forEach((wish, index) => {
+                    const wishItem = document.createElement('div');
+                    wishItem.className = 'wish-text-item';
+                    if (index === this.currentCarouselIndex) {
+                        wishItem.classList.add('active');
+                    }
+                    
+                    const wishNumber = this.wishes.length - displayWishes.length + index + 1;
+                    
+                    wishItem.innerHTML = `
+                        <div class="wish-text-badge">#${wishNumber}</div>
+                        <div class="wish-text-content">"${this.escapeHtml(wish.wish)}"</div>
+                        <div class="wish-text-author">— ${this.escapeHtml(wish.name)}</div>
+                    `;
+                    
+                    container.appendChild(wishItem);
+                    
+                    // 创建指示器
+                    const indicator = document.createElement('div');
+                    indicator.className = 'indicator-dot';
+                    if (index === this.currentCarouselIndex) {
+                        indicator.classList.add('active');
+                    }
+                    indicator.addEventListener('click', () => this.goToWish(index));
+                    indicators.appendChild(indicator);
+                });
+            }
+
+            // 下一个祝福
+            nextWish() {
+                const displayWishes = this.wishes.slice(-10);
+                if (displayWishes.length === 0) return;
+                
+                const items = document.querySelectorAll('.wish-text-item');
+                const indicators = document.querySelectorAll('.indicator-dot');
+                
+                // 当前项退出
+                if (items[this.currentCarouselIndex]) {
+                    items[this.currentCarouselIndex].classList.remove('active');
+                    items[this.currentCarouselIndex].classList.add('exiting');
+                    setTimeout(() => {
+                        items[this.currentCarouselIndex].classList.remove('exiting');
+                    }, 600);
+                }
+                
+                indicators[this.currentCarouselIndex]?.classList.remove('active');
+                
+                // 更新索引
+                this.currentCarouselIndex = (this.currentCarouselIndex + 1) % displayWishes.length;
+                
+                // 下一项进入
+                if (items[this.currentCarouselIndex]) {
+                    items[this.currentCarouselIndex].classList.add('active');
+                }
+                
+                indicators[this.currentCarouselIndex]?.classList.add('active');
+                
+                // 重置自动播放
+                this.resetCarouselAutoPlay();
+            }
+
+            // 上一个祝福
+            prevWish() {
+                const displayWishes = this.wishes.slice(-10);
+                if (displayWishes.length === 0) return;
+                
+                const items = document.querySelectorAll('.wish-text-item');
+                const indicators = document.querySelectorAll('.indicator-dot');
+                
+                // 当前项退出
+                if (items[this.currentCarouselIndex]) {
+                    items[this.currentCarouselIndex].classList.remove('active');
+                    items[this.currentCarouselIndex].classList.add('exiting');
+                    setTimeout(() => {
+                        items[this.currentCarouselIndex].classList.remove('exiting');
+                    }, 600);
+                }
+                
+                indicators[this.currentCarouselIndex]?.classList.remove('active');
+                
+                // 更新索引
+                this.currentCarouselIndex = (this.currentCarouselIndex - 1 + displayWishes.length) % displayWishes.length;
+                
+                // 下一项进入
+                if (items[this.currentCarouselIndex]) {
+                    items[this.currentCarouselIndex].classList.add('active');
+                }
+                
+                indicators[this.currentCarouselIndex]?.classList.add('active');
+                
+                // 重置自动播放
+                this.resetCarouselAutoPlay();
+            }
+
+            // 跳转到指定祝福
+            goToWish(index) {
+                const displayWishes = this.wishes.slice(-10);
+                if (displayWishes.length === 0 || index === this.currentCarouselIndex) return;
+                
+                const items = document.querySelectorAll('.wish-text-item');
+                const indicators = document.querySelectorAll('.indicator-dot');
+                
+                // 当前项退出
+                if (items[this.currentCarouselIndex]) {
+                    items[this.currentCarouselIndex].classList.remove('active');
+                    items[this.currentCarouselIndex].classList.add('exiting');
+                    setTimeout(() => {
+                        items[this.currentCarouselIndex].classList.remove('exiting');
+                    }, 600);
+                }
+                
+                indicators[this.currentCarouselIndex]?.classList.remove('active');
+                
+                // 更新索引
+                this.currentCarouselIndex = index;
+                
+                // 目标项进入
+                if (items[this.currentCarouselIndex]) {
+                    items[this.currentCarouselIndex].classList.add('active');
+                }
+                
+                indicators[this.currentCarouselIndex]?.classList.add('active');
+                
+                // 重置自动播放
+                this.resetCarouselAutoPlay();
+            }
+
+            // 启动自动播放
+            startCarouselAutoPlay() {
+                this.carouselAutoPlayInterval = setInterval(() => {
+                    this.nextWish();
+                }, 3000); // 每3秒切换（更快）
+            }
+
+            // 重置自动播放
+            resetCarouselAutoPlay() {
+                if (this.carouselAutoPlayInterval) {
+                    clearInterval(this.carouselAutoPlayInterval);
+                }
+                this.startCarouselAutoPlay();
+            }
+
+            // 停止自动播放
+            stopCarouselAutoPlay() {
+                if (this.carouselAutoPlayInterval) {
+                    clearInterval(this.carouselAutoPlayInterval);
+                    this.carouselAutoPlayInterval = null;
+                }
+            }
+
+            startPolling() {
+                // 每5秒检查新的约定
+                setInterval(async () => {
+                    try {
+                        const response = await fetch('/api/wishes');
+                        if (response.ok) {
+                            const newWishes = await response.json();
+                            if (newWishes.length > this.wishes.length) {
+                            this.wishes = newWishes;
+                            this.updateDisplay();
+                        }
+                    }
+                } catch (error) {
+                        console.error('轮询约定失败:', error);
+                    }
+                }, 5000);
+            }
+
+            addNewWish(wish) {
+                this.wishes.push(wish);
+                this.updateDisplay();
+            }
+        }
+
+        // 初始化显示系统
+        document.addEventListener('DOMContentLoaded', () => {
+            window.ohCardDisplay = new OHCardDisplay();
+        });
+
+        // 监听实时更新（如果有WebSocket连接）
+        if (typeof WebSocket !== 'undefined') {
+            try {
+                const ws = new WebSocket(`ws://${window.location.host}/ws`);
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'new_wish') {
+                        window.lighthouseDisplay.addNewWish(data.wish);
+                    }
+                };
+            } catch (error) {
+                console.log('WebSocket连接失败，使用轮询模式');
+            }
+        }
+    </script>
+</body>
+</html>

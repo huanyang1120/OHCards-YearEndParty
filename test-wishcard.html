@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wish Card Module Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        button {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .card-canvas {
+            position: fixed;
+            top: -1000px;
+            left: -1000px;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Wish Card Module 测试</h1>
+        <p>测试模块化的愿望卡片生成功能</p>
+        
+        <div id="status" class="status"></div>
+        
+        <button onclick="testDownloadWishCard()">测试下载 Wish Card (默认背景图片)</button>
+        <button onclick="testDownloadWishCardWithBackground()">测试下载 Wish Card (自定义背景图片)</button>
+        <button onclick="checkModuleLoaded()">检查模块是否加载</button>
+        
+        <h3>测试数据：</h3>
+        <p><strong>姓名：</strong>测试用户</p>
+        <p><strong>愿望：</strong>希望 OH卡 18周年生日快乐！愿未来能够继续照亮更多人的人生和职业道路。Living Upward! 向上生活！</p>
+        <p><strong>时间：</strong>2025/10/13 15:39:54</p>
+    </div>
+
+    <canvas id="cardCanvas" class="card-canvas" width="540" height="960"></canvas>
+    
+    <!-- 引入独立的愿望卡片生成模块 -->
+    <script src="wishCard.js"></script>
+
+    <script>
+        const testWishData = {
+            name: '测试用户',
+            wish: 'Best wishes\nHappy everyday\nGood Good Study\nDay Day UP\n\n希望 OH卡 18周年生日快乐！\n愿未来能够继续照亮更多人的人生和职业道路。\nLiving Upward! 向上生活！',
+            time: '2025/10/13 15:39:54'
+        };
+
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + (isError ? 'error' : 'success');
+        }
+
+        function checkModuleLoaded() {
+            if (window.WishCard && typeof window.WishCard.downloadWishCard === 'function') {
+                showStatus('✅ WishCard 模块已成功加载！');
+                console.log('WishCard 模块方法:', Object.keys(window.WishCard));
+            } else {
+                showStatus('❌ WishCard 模块未加载或加载失败', true);
+            }
+        }
+
+        function testDownloadWishCard() {
+            try {
+                if (!window.WishCard) {
+                    showStatus('❌ WishCard 模块未加载', true);
+                    return;
+                }
+                
+                showStatus('🎨 正在生成 Wish Card (默认背景)...');
+                window.WishCard.downloadWishCard(testWishData);
+                showStatus('✅ Wish Card (默认背景) 生成成功！应该已开始下载。');
+                
+            } catch (error) {
+                showStatus('❌ 生成 Wish Card 时出错: ' + error.message, true);
+                console.error('Error:', error);
+            }
+        }
+
+        function testDownloadWishCardWithBackground() {
+            try {
+                if (!window.WishCard) {
+                    showStatus('❌ WishCard 模块未加载', true);
+                    return;
+                }
+                
+                showStatus('🎨 正在生成 Wish Card (使用 OH卡 Logo 作为背景)...');
+                // 使用 OH卡Logo.png 作为背景图片进行测试
+                const options = {
+                    backgroundImage: './OH卡Logo.png'
+                };
+                window.WishCard.downloadWishCard(testWishData, options);
+                showStatus('✅ Wish Card (背景图片) 生成成功！应该已开始下载。');
+                
+            } catch (error) {
+                showStatus('❌ 生成带背景图片的 Wish Card 时出错: ' + error.message, true);
+                console.error('Error:', error);
+            }
+        }
+
+        // 页面加载完成后检查模块
+        window.onload = function() {
+            setTimeout(checkModuleLoaded, 100);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OH卡 18th Birthday Wish - QR Code</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(69, 183, 209, 0.1) 0%, transparent 50%);
+            animation: backgroundMove 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundMove {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 10;
+            max-width: 600px;
+            animation: containerFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes containerFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            font-size: 24px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .qr-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 40px 0;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: inline-block;
+        }
+
+        .qr-container::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #ff6b6b);
+            border-radius: 23px;
+            z-index: -1;
+            animation: borderRotate 3s linear infinite;
+        }
+
+        @keyframes borderRotate {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #qrcode-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 15px;
+            display: block;
+        }
+
+        .loading {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 15px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .instructions {
+            font-size: 20px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .steps {
+            font-size: 16px;
+            line-height: 1.8;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4ecdc4;
+            display: block;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .url-display {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            word-break: break-all;
+        }
+
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-element {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .floating-element:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            font-size: 60px;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            top: 20%;
+            right: 15%;
+            font-size: 40px;
+            animation-delay: 2s;
+        }
+
+        .floating-element:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            font-size: 50px;
+            animation-delay: 4s;
+        }
+
+        .floating-element:nth-child(4) {
+            bottom: 30%;
+            right: 10%;
+            font-size: 35px;
+            animation-delay: 6s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.05;
+            }
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+                opacity: 0.15;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="floating-elements">
+        <div class="floating-element">✨</div>
+        <div class="floating-element">💫</div>
+        <div class="floating-element">🌟</div>
+        <div class="floating-element">⭐</div>
+    </div>
+
+    <div class="container">
+        <div class="title">Scan to Make a Wish</div>
+        <div class="subtitle">OH卡 18th Birthday · Living Upward</div>
+        
+        <div class="instructions">
+            Scan the QR code below with your phone
+        </div>
+        
+        <div class="qr-container">
+            <div class="loading" id="loading">
+                <div>
+                    <div class="spinner"></div>
+                    <div>正在生成二维码...</div>
+                </div>
+            </div>
+            <img id="qrcode-image" style="display: none;" alt="扫码参与二维码">
+        </div>
+        
+        <div class="steps">
+            1. Use WeChat or other QR code apps to scan the code<br>
+            2. Enter your name and upward living wish<br>
+            3. View your wish on the big screen after submission
+        </div>
+        
+        <div class="url-display" id="urlDisplay" style="display: none;"></div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="totalCount">-</span>
+                <div class="stat-label">总约定数</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="todayCount">-</span>
+                <div class="stat-label">今日新增</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="onlineCount">-</span>
+                <div class="stat-label">在线用户</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class QRCodeDisplay {
+            constructor() {
+                this.onlineUsers = 0;
+                this.init();
+            }
+
+            async init() {
+                await this.loadQRCode();
+                await this.loadStats();
+                this.startStatsUpdate();
+                this.setupWebSocket();
+            }
+
+            async loadQRCode() {
+                try {
+                    const response = await fetch('/api/qrcode');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.displayQRCode(data.qrcode, data.url);
+                    } else {
+                        throw new Error('生成二维码失败');
+                    }
+                } catch (error) {
+                    console.error('加载二维码失败:', error);
+                    this.showError('二维码生成失败，请刷新页面重试');
+                }
+            }
+
+            displayQRCode(qrCodeData, url) {
+                const loading = document.getElementById('loading');
+                const qrImage = document.getElementById('qrcode-image');
+                const urlDisplay = document.getElementById('urlDisplay');
+                
+                qrImage.src = qrCodeData;
+                qrImage.style.display = 'block';
+                loading.style.display = 'none';
+                
+                urlDisplay.textContent = url;
+                urlDisplay.style.display = 'block';
+            }
+
+            async loadStats() {
+                try {
+                    const response = await fetch('/api/stats');
+                    if (response.ok) {
+                        const stats = await response.json();
+                        this.updateStats(stats);
+                    }
+                } catch (error) {
+                    console.error('加载统计信息失败:', error);
+                }
+            }
+
+            updateStats(stats) {
+                document.getElementById('totalCount').textContent = stats.total || 0;
+                document.getElementById('todayCount').textContent = stats.today || 0;
+                document.getElementById('onlineCount').textContent = this.onlineUsers;
+            }
+
+            startStatsUpdate() {
+                // 每30秒更新一次统计信息
+                setInterval(async () => {
+                    await this.loadStats();
+                }, 30000);
+                
+                // 每5秒更新一次在线用户数（模拟）
+                setInterval(() => {
+                    // 这里可以通过WebSocket获取真实的在线用户数
+                    this.onlineUsers = Math.max(1, this.onlineUsers + Math.floor(Math.random() * 3) - 1);
+                    document.getElementById('onlineCount').textContent = this.onlineUsers;
+                }, 5000);
+            }
+
+            setupWebSocket() {
+                try {
+                    const ws = new WebSocket(`ws://${window.location.host}/ws`);
+                    
+                    ws.onopen = () => {
+                        console.log('WebSocket连接已建立');
+                    };
+                    
+                    ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'new_wish') {
+                            // 收到新约定时更新统计
+                            this.loadStats();
+                            this.showNewWishNotification(data.wish);
+                        }
+                    };
+                    
+                    ws.onclose = () => {
+                        console.log('WebSocket连接已关闭，5秒后尝试重连');
+                        setTimeout(() => this.setupWebSocket(), 5000);
+                    };
+                    
+                    ws.onerror = (error) => {
+                        console.error('WebSocket错误:', error);
+                    };
+                    
+                } catch (error) {
+                    console.error('WebSocket连接失败:', error);
+                }
+            }
+
+            showNewWishNotification(wish) {
+                // 创建新约定提醒动画
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(78, 205, 196, 0.9);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    font-size: 16px;
+                    z-index: 1000;
+                    animation: slideIn 0.5s ease-out;
+                    max-width: 300px;
+                `;
+                
+                notification.innerHTML = `
+                    <strong>新约定</strong><br>
+                    ${this.escapeHtml(wish.name)}: ${this.escapeHtml(wish.wish.substring(0, 50))}...
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // 3秒后移除通知
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.5s ease-out';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 500);
+                }, 3000);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showError(message) {
+                const loading = document.getElementById('loading');
+                loading.innerHTML = `<div style="color: #dc3545;">${message}</div>`;
+            }
+        }
+
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { 
+                    transform: translateX(100%); 
+                    opacity: 0; 
+                }
+                to { 
+                    transform: translateX(0); 
+                    opacity: 1; 
+                }
+            }
+            
+            @keyframes slideOut {
+                from { 
+                    transform: translateX(0); 
+                    opacity: 1; 
+                }
+                to { 
+                    transform: translateX(100%); 
+                    opacity: 0; 
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 初始化QR码显示
+        document.addEventListener('DOMContentLoaded', () => {
+            new QRCodeDisplay();
+        });
+    </script>
+</body>
+</html>

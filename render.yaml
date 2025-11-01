@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: OHCards-YearEndParty
+    runtime: node
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/wishes
+    plan: free
+    region: singapore
+    envVars:
+      - key: NODE_ENV
+        value: production
